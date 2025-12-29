@@ -1,0 +1,241 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="hero-section">
+    <div class="iss-orbit-animation">
+        <div class="orbit-path"></div>
+        <div class="earth"></div>
+        <div class="iss-icon"></div>
+    </div>
+    <h1 class="hero-title">ISS Tracker</h1>
+    <p class="hero-subtitle">Real-time tracking of the International Space Station and upcoming space launches</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">🛰️ ISS Position</h5>
+                <span class="live-indicator" style="font-size: 0.75rem;">LIVE</span>
+            </div>
+            <div class="card-body">
+                @if (Model.IssPosition != null)
+                {
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="data-label">Latitude</div>
+                            <div class="data-value highlight">@Model.IssPosition.Latitude.ToString("F4")°</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="data-label">Longitude</div>
+                            <div class="data-value highlight">@Model.IssPosition.Longitude.ToString("F4")°</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="data-label">Altitude</div>
+                            <div class="data-value">@Model.IssPosition.Altitude.ToString("F1") <small style="color: var(--text-muted);">km</small></div>
+                        </div>
+                        <div class="col-6">
+                            <div class="data-label">Velocity</div>
+                            <div class="data-value">@Model.IssPosition.Velocity.ToString("F0") <small style="color: var(--text-muted);">km/h</small></div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-3" style="border-top: 1px solid var(--border-color);">
+                        <span class="badge @(Model.IssPosition.Visibility == "daylight" ? "bg-warning" : "bg-dark")">
+                            @(Model.IssPosition.Visibility == "daylight" ? "☀️ Daylight" : "🌙 Eclipse")
+                        </span>
+                        <small style="color: var(--text-muted);">@Model.IssPosition.Timestamp.ToString("HH:mm:ss") UTC</small>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <div class="loading-spinner mb-3"></div>
+                        <p style="color: var(--text-muted);">Loading position data...</p>
+                    </div>
+                }
+            </div>
+            <div class="card-footer">
+                <a asp-controller="Satellite" asp-action="Track" class="btn btn-primary w-100">
+                    🗺️ Track on Map
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">👨‍🚀 People in Space</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center py-5">
+                @if (Model.PeopleInSpace > 0)
+                {
+                    <div class="stat-value success" style="font-size: 5rem; line-height: 1;">@Model.PeopleInSpace</div>
+                    <p style="color: var(--text-secondary); margin-top: 1rem;">Astronauts currently in orbit</p>
+                    <div class="d-flex gap-2 mt-2">
+                        @for (int i = 0; i < Math.Min(Model.PeopleInSpace, 10); i++)
+                        {
+                            <span style="font-size: 1.5rem; animation: fadeInUp 0.5s ease @(i * 0.1)s both;">👨‍🚀</span>
+                        }
+                        @if (Model.PeopleInSpace > 10)
+                        {
+                            <span style="color: var(--text-muted);">+@(Model.PeopleInSpace - 10)</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="stat-value" style="font-size: 4rem; opacity: 0.3;">--</div>
+                    <p style="color: var(--text-muted);">Data unavailable</p>
+                }
+            </div>
+            <div class="card-footer text-center">
+                <small style="color: var(--text-muted);">Includes crews aboard ISS and other spacecraft</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">📊 Quick Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="data-label">ISS Orbital Speed</div>
+                    <div class="data-value">27,600 <small style="color: var(--text-muted);">km/h</small></div>
+                </div>
+                <div class="mb-4">
+                    <div class="data-label">Orbits Per Day</div>
+                    <div class="data-value">15.5</div>
+                </div>
+                <div class="mb-4">
+                    <div class="data-label">Time to Orbit Earth</div>
+                    <div class="data-value">~93 <small style="color: var(--text-muted);">minutes</small></div>
+                </div>
+                <div>
+                    <div class="data-label">Years in Orbit</div>
+                    <div class="data-value">@((DateTime.Now.Year - 1998))+</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a asp-controller="Home" asp-action="About" class="btn btn-outline-primary w-100">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 style="color: var(--text-primary);">🚀 Upcoming Launches</h3>
+            <a asp-controller="Launch" asp-action="Index" class="btn btn-outline-primary">View All</a>
+        </div>
+
+        @if (Model.UpcomingLaunches.Any())
+        {
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Mission</th>
+                                <th>Rocket</th>
+                                <th>Provider</th>
+                                <th>Launch Date</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var launch in Model.UpcomingLaunches)
+                            {
+                                <tr style="animation: fadeInUp 0.5s ease;">
+                                    <td>
+                                        <strong style="color: var(--text-primary);">@TruncateText(launch.Name, 40)</strong>
+                                    </td>
+                                    <td style="color: var(--text-secondary);">@(launch.RocketName ?? "TBD")</td>
+                                    <td style="color: var(--text-secondary);">@(launch.LaunchProvider ?? "TBD")</td>
+                                    <td>
+                                        @if (launch.LaunchDate.HasValue)
+                                        {
+                                            <span style="color: var(--text-primary);">@launch.LaunchDate.Value.ToString("MMM dd, yyyy")</span>
+                                            <br><small style="color: var(--text-muted);">@launch.LaunchDate.Value.ToString("HH:mm") UTC</small>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: var(--text-muted);">TBD</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetCountdownBadgeClass(launch.TimeUntilLaunch)">@launch.TimeUntilLaunch</span>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Launch" asp-action="Details" asp-route-id="@launch.LaunchLibraryId" class="btn btn-sm btn-outline-secondary">
+                                            Details →
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;">🚀</div>
+                    <h5 style="color: var(--text-secondary);">No upcoming launches available</h5>
+                    <p style="color: var(--text-muted);">Check back later for new launch schedules.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .hero-section {
+        position: relative;
+        z-index: 2;
+    }
+    .iss-orbit-animation {
+        z-index: 3;
+    }
+    .row.g-4 > .col-lg-4:nth-child(1) .card {
+        animation: fadeInUp 0.6s ease 0.1s both;
+    }
+    .row.g-4 > .col-lg-4:nth-child(2) .card {
+        animation: fadeInUp 0.6s ease 0.2s both;
+    }
+    .row.g-4 > .col-lg-4:nth-child(3) .card {
+        animation: fadeInUp 0.6s ease 0.3s both;
+    }
+</style>
+}
+
+@functions {
+    private string GetCountdownBadgeClass(string countdown)
+    {
+        if (countdown.Contains("hour") || countdown.Contains("min"))
+            return "bg-danger";
+        if (countdown.Contains("1 day") || countdown.Contains("2 day"))
+            return "bg-warning";
+        return "bg-info";
+    }
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+        return text.Substring(0, maxLength) + "...";
+    }
+}

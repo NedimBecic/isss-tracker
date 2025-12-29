@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+*.db
+*.db-shm
+*.db-wal
+*.user
+*.suo
+node_modules/

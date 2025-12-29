@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] - ISS Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="orbit-container">
+            <div class="planet"></div>
+            <div class="satellite"></div>
+        </div>
+        <h4 style="color: #f1f5f9; margin-bottom: 0.5rem;">ISS Tracker</h4>
+        <p style="color: #64748b; font-size: 0.875rem;">Loading mission data...</p>
+    </div>
+</div>
+
+<div class="stars-container" id="starsContainer"></div>
+
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <span class="logo-icon">🛰️</span> ISS Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Satellite" ? "active" : "")" asp-controller="Satellite" asp-action="Track">
+                            Track ISS
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Launch" ? "active" : "")" asp-controller="Launch" asp-action="Index">
+                            Launches
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Analytics" ? "active" : "")" asp-controller="Analytics" asp-action="Index">
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "About" ? "active" : "")" asp-controller="Home" asp-action="About">
+                            About
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="container-fluid px-4 py-4">
+    <main role="main" class="page-content">
+        @RenderBody()
+    </main>
+</div>
+
+<footer>
+    <div class="container text-center">
+        <p class="mb-2" style="color: #94a3b8;">&copy; @DateTime.Now.Year ISS Tracker - Real-time International Space Station Tracking</p>
+        <small style="color: #64748b;">
+            Data provided by
+            <a href="https://api.wheretheiss.at" target="_blank">Where the ISS at?</a>,
+            <a href="http://api.open-notify.org" target="_blank">Open Notify</a>, and
+            <a href="https://thespacedevs.com" target="_blank">The Space Devs</a>
+        </small>
+    </div>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<script>
+    (function() {
+        const container = document.getElementById('starsContainer');
+        const starCount = 150;
+
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = Math.random() * 3 + 1 + 'px';
+            star.style.height = star.style.width;
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            star.style.setProperty('--opacity', Math.random() * 0.7 + 0.3);
+            star.style.animationDelay = Math.random() * 5 + 's';
+            container.appendChild(star);
+        }
+
+        for (let i = 0; i < 3; i++) {
+            const shootingStar = document.createElement('div');
+            shootingStar.className = 'shooting-star';
+            shootingStar.style.top = Math.random() * 50 + '%';
+            shootingStar.style.left = '-100px';
+            shootingStar.style.animationDelay = (i * 5 + Math.random() * 5) + 's';
+            shootingStar.style.animationDuration = (2 + Math.random() * 2) + 's';
+            container.appendChild(shootingStar);
+        }
+    })();
+
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('fade-out');
+            setTimeout(function() {
+                overlay.style.display = 'none';
+            }, 400);
+        }, 500);
+    });
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

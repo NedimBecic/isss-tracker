@@ -1,0 +1,146 @@
+@{
+    ViewData["Title"] = "About";
+}
+
+<div class="hero-section" style="padding: 1rem 0 2rem;">
+    <h1 class="hero-title" style="font-size: 2.5rem;">About ISS Tracker</h1>
+    <p class="hero-subtitle">
+        Track the International Space Station in real-time, discover upcoming space launches,
+        and find out when the ISS will fly over your location.
+    </p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 text-center" style="animation: fadeInUp 0.5s ease 0.1s both;">
+            <div class="card-body py-5">
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🛰️</div>
+                <h4 style="color: var(--text-primary); font-weight: 600;">Real-Time Tracking</h4>
+                <p style="color: var(--text-muted);">
+                    Watch the ISS orbit Earth with position updates every 5 seconds.
+                    See its current latitude, longitude, altitude, and velocity.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center" style="animation: fadeInUp 0.5s ease 0.2s both;">
+            <div class="card-body py-5">
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🚀</div>
+                <h4 style="color: var(--text-primary); font-weight: 600;">Launch Calendar</h4>
+                <p style="color: var(--text-muted);">
+                    Stay informed about upcoming rocket launches from around the world.
+                    Get mission details, countdowns, and live stream links.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center" style="animation: fadeInUp 0.5s ease 0.3s both;">
+            <div class="card-body py-5">
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">📍</div>
+                <h4 style="color: var(--text-primary); font-weight: 600;">Flyover Predictions</h4>
+                <p style="color: var(--text-muted);">
+                    Find out when the ISS will pass over your location.
+                    Get timing, duration, and maximum elevation for each pass.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-lg-10 mx-auto">
+        <div class="card" style="animation: fadeInUp 0.5s ease 0.4s both;">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">🌍 About the International Space Station</h4>
+            </div>
+            <div class="card-body">
+                <p style="color: var(--text-secondary); line-height: 1.8;">
+                    The International Space Station (ISS) is a modular space station in low Earth orbit.
+                    It is a multinational collaborative project involving five participating space agencies:
+                    NASA (United States), Roscosmos (Russia), JAXA (Japan), ESA (Europe), and CSA (Canada).
+                </p>
+                <p style="color: var(--text-secondary); line-height: 1.8;">
+                    The station orbits Earth at an average altitude of approximately 420 kilometers (260 miles),
+                    completing about 15.5 orbits per day at a speed of roughly 28,000 km/h (17,500 mph).
+                </p>
+                <div class="row mt-4">
+                    <div class="col-sm-6 col-md-4 mb-3">
+                        <div class="data-label">Launch Date</div>
+                        <div class="data-value">November 20, 1998</div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 mb-3">
+                        <div class="data-label">NORAD ID</div>
+                        <div class="data-value">25544</div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 mb-3">
+                        <div class="data-label">Orbital Period</div>
+                        <div class="data-value">~93 minutes</div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 mb-3">
+                        <div class="data-label">Average Speed</div>
+                        <div class="data-value">27,600 km/h</div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 mb-3">
+                        <div class="data-label">Average Altitude</div>
+                        <div class="data-value">420 km</div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 mb-3">
+                        <div class="data-label">Orbits Per Day</div>
+                        <div class="data-value">15.5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-lg-10 mx-auto">
+        <div class="card" style="animation: fadeInUp 0.5s ease 0.5s both;">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">📡 Data Sources</h4>
+            </div>
+            <div class="card-body">
+                <p style="color: var(--text-secondary);">This application uses the following free APIs:</p>
+                <div class="row mt-3">
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded" style="background: var(--bg-secondary); height: 100%;">
+                            <h6 style="color: var(--text-primary);">Where the ISS at?</h6>
+                            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Real-time ISS position data</p>
+                            <a href="https://api.wheretheiss.at" target="_blank" style="color: var(--accent-primary); font-size: 0.875rem;">api.wheretheiss.at →</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded" style="background: var(--bg-secondary); height: 100%;">
+                            <h6 style="color: var(--text-primary);">Open Notify</h6>
+                            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">People in space count</p>
+                            <a href="http://api.open-notify.org" target="_blank" style="color: var(--accent-primary); font-size: 0.875rem;">api.open-notify.org →</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded" style="background: var(--bg-secondary); height: 100%;">
+                            <h6 style="color: var(--text-primary);">Launch Library 2</h6>
+                            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Rocket launch information</p>
+                            <a href="https://thespacedevs.com" target="_blank" style="color: var(--accent-primary); font-size: 0.875rem;">thespacedevs.com →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card text-center" style="background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary)); animation: fadeInUp 0.5s ease 0.6s both;">
+            <div class="card-body py-4">
+                <h5 style="color: var(--text-primary);">⚡ Technology Stack</h5>
+                <p style="color: var(--text-muted); margin-bottom: 0;">
+                    Built with ASP.NET Core 8.0, Entity Framework Core, Bootstrap 5, and Leaflet.js
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

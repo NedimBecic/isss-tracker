@@ -1,0 +1,133 @@
+@model LaunchDto
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb" style="background: transparent; padding: 0;">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" style="color: var(--accent-primary);">Dashboard</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Launch" asp-action="Index" style="color: var(--accent-primary);">Launches</a></li>
+                <li class="breadcrumb-item active" aria-current="page" style="color: var(--text-muted);">Details</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card" style="overflow: hidden;">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div style="position: relative;">
+                    <img src="@Model.ImageUrl" class="img-fluid" alt="@Model.Name" style="width: 100%; max-height: 500px; object-fit: cover;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to top, var(--bg-card), transparent);"></div>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-center" style="height: 400px; background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));">
+                    <span style="font-size: 6rem; opacity: 0.3;">🚀</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <span class="badge @GetStatusBadgeClass(Model.Status)" style="font-size: 0.875rem; padding: 0.5rem 1rem;">@Model.Status</span>
+            <span class="badge @GetCountdownBadgeClass(Model.TimeUntilLaunch)" style="font-size: 0.875rem; padding: 0.5rem 1rem;">@Model.TimeUntilLaunch</span>
+        </div>
+
+        <h1 style="color: var(--text-primary); font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem;">@Model.Name</h1>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-4">
+                        <div class="data-label">Launch Date</div>
+                        <div class="data-value">
+                            @if (Model.LaunchDate.HasValue)
+                            {
+                                @Model.LaunchDate.Value.ToString("MMMM dd, yyyy")
+                                <br><small style="color: var(--text-muted);">@Model.LaunchDate.Value.ToString("HH:mm") UTC</small>
+                            }
+                            else
+                            {
+                                <text>To Be Determined</text>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <div class="data-label">Rocket</div>
+                        <div class="data-value">@(Model.RocketName ?? "TBD")</div>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <div class="data-label">Launch Provider</div>
+                        <div class="data-value">@(Model.LaunchProvider ?? "TBD")</div>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <div class="data-label">Launch Site</div>
+                        <div class="data-value">@(Model.LaunchSite ?? "TBD")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.MissionDescription))
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">📋 Mission Description</h5>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 0;">@Model.MissionDescription</p>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.VideoUrl))
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">📺 Watch Live</h5>
+                </div>
+                <div class="card-body">
+                    <a href="@Model.VideoUrl" target="_blank" class="btn btn-danger w-100" style="padding: 0.75rem;">
+                        🔴 Watch Live Stream
+                    </a>
+                </div>
+            </div>
+        }
+
+        <a asp-action="Index" class="btn btn-outline-primary">
+            ← Back to Launches
+        </a>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(LaunchStatus status)
+    {
+        return status switch
+        {
+            LaunchStatus.Scheduled => "bg-primary",
+            LaunchStatus.InFlight => "bg-warning text-dark",
+            LaunchStatus.Success => "bg-success",
+            LaunchStatus.Failed => "bg-danger",
+            LaunchStatus.PartialFailure => "bg-warning text-dark",
+            LaunchStatus.ToBeDetermined => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetCountdownBadgeClass(string countdown)
+    {
+        if (countdown.Contains("hour") || countdown.Contains("min"))
+            return "bg-danger";
+        if (countdown.Contains("1 day") || countdown.Contains("2 day"))
+            return "bg-warning text-dark";
+        return "bg-info";
+    }
+}

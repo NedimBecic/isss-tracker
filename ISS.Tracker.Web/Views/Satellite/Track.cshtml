@@ -1,0 +1,292 @@
+@model SatelliteTrackViewModel
+@{
+    ViewData["Title"] = "Track ISS";
+}
+
+<div class="hero-section" style="padding: 1rem 0 2rem;">
+    <h1 class="hero-title" style="font-size: 2.5rem;">🛰️ Live ISS Tracker</h1>
+    <p class="hero-subtitle">Watch the International Space Station orbit Earth in real-time</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="mb-0">🗺️ ISS Location</h5>
+                    <span class="live-indicator" style="font-size: 0.7rem;">LIVE</span>
+                </div>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="autoFollowToggle" checked>
+                    <label class="form-check-label" for="autoFollowToggle" style="font-size: 0.875rem;">Auto-follow</label>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="iss-map" style="height: 550px; border-radius: 0 0 16px 16px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">📡 Current Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <div class="data-label">Latitude</div>
+                        <div class="data-value highlight" id="iss-lat">
+                            <span class="skeleton" style="display: inline-block; width: 80px; height: 24px;"></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="data-label">Longitude</div>
+                        <div class="data-value highlight" id="iss-lon">
+                            <span class="skeleton" style="display: inline-block; width: 80px; height: 24px;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <div class="data-label">Altitude</div>
+                        <div class="data-value" id="iss-alt">--</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="data-label">Velocity</div>
+                        <div class="data-value" id="iss-vel">--</div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-3" style="border-top: 1px solid var(--border-color);">
+                    <span id="iss-visibility" class="badge bg-secondary">--</span>
+                    <small style="color: var(--text-muted);" id="iss-timestamp">--</small>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <small style="color: var(--text-muted);">Updates every 5 seconds</small>
+                <div class="loading-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">📍 Flyover Predictions</h5>
+            </div>
+            <div class="card-body">
+                <p style="color: var(--text-muted); font-size: 0.875rem;">Get predictions for when the ISS will pass over your location.</p>
+                <button id="getFlyoversBtn" class="btn btn-info w-100 mb-3">
+                    📍 Get Flyovers for My Location
+                </button>
+                <div id="flyovers-loading" class="text-center py-3 d-none">
+                    <div class="loading-spinner mb-2"></div>
+                    <small style="color: var(--text-muted);">Getting your location...</small>
+                </div>
+                <div id="flyovers-error" class="alert alert-danger d-none"></div>
+                <div id="flyovers-list" class="d-none">
+                    <h6 style="color: var(--text-secondary);" class="mb-3">Upcoming Passes:</h6>
+                    <div id="flyovers-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .leaflet-tile-pane {
+        filter: brightness(0.8) saturate(1.2);
+    }
+    .leaflet-control-attribution {
+        background: rgba(26, 31, 46, 0.9) !important;
+        color: var(--text-muted) !important;
+    }
+    .leaflet-control-attribution a {
+        color: var(--accent-primary) !important;
+    }
+    .flyover-item {
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    .flyover-item:hover {
+        background: var(--bg-card-hover);
+    }
+</style>
+}
+
+@section Scripts {
+<script>
+    const map = L.map('iss-map', { zoomControl: true }).setView([0, 0], 2);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+
+    const issIcon = L.divIcon({
+        className: 'iss-marker',
+        html: '<div style="font-size: 32px; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.8));">🛰️</div>',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+    });
+
+    const userIcon = L.divIcon({
+        className: 'user-marker',
+        html: '<div style="font-size: 24px; filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));">📍</div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24]
+    });
+
+    let issMarker = L.marker([0, 0], { icon: issIcon }).addTo(map);
+    issMarker.bindPopup('<div style="text-align: center;"><strong>🛰️ International Space Station</strong><br><small>Orbiting at ~420 km altitude</small></div>');
+
+    let orbitTrail = [];
+    const maxTrailLength = 50;
+    let userMarker = null;
+    let autoFollow = true;
+
+    document.getElementById('autoFollowToggle').addEventListener('change', function() {
+        autoFollow = this.checked;
+    });
+
+    function updateIssPosition() {
+        fetch('/Satellite/GetIssPosition')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    return;
+                }
+
+                const lat = data.latitude;
+                const lon = data.longitude;
+
+                issMarker.setLatLng([lat, lon]);
+
+                document.getElementById('iss-lat').innerHTML = lat.toFixed(4) + '°';
+                document.getElementById('iss-lon').innerHTML = lon.toFixed(4) + '°';
+                document.getElementById('iss-alt').textContent = data.altitude.toFixed(1) + ' km';
+                document.getElementById('iss-vel').textContent = data.velocity.toFixed(0) + ' km/h';
+
+                const visibilityBadge = document.getElementById('iss-visibility');
+                if (data.visibility === 'daylight') {
+                    visibilityBadge.className = 'badge bg-warning';
+                    visibilityBadge.textContent = '☀️ Daylight';
+                } else {
+                    visibilityBadge.className = 'badge bg-dark';
+                    visibilityBadge.textContent = '🌙 Eclipse';
+                }
+
+                const timestamp = new Date(data.timestamp);
+                document.getElementById('iss-timestamp').textContent = timestamp.toUTCString().slice(17, 25) + ' UTC';
+
+                if (autoFollow) {
+                    map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });
+                }
+            })
+            .catch(error => console.error('Error fetching ISS position:', error));
+    }
+
+    updateIssPosition();
+    setInterval(updateIssPosition, 5000);
+
+    document.getElementById('getFlyoversBtn').addEventListener('click', function() {
+        const loadingEl = document.getElementById('flyovers-loading');
+        const errorEl = document.getElementById('flyovers-error');
+        const listEl = document.getElementById('flyovers-list');
+        const contentEl = document.getElementById('flyovers-content');
+
+        loadingEl.classList.remove('d-none');
+        errorEl.classList.add('d-none');
+        listEl.classList.add('d-none');
+
+        if (!navigator.geolocation) {
+            loadingEl.classList.add('d-none');
+            errorEl.classList.remove('d-none');
+            errorEl.textContent = 'Geolocation is not supported by your browser.';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+                userMarker = L.marker([lat, lon], { icon: userIcon }).addTo(map);
+                userMarker.bindPopup('<div style="text-align: center;"><strong>📍 Your Location</strong></div>').openPopup();
+
+                fetch('/Satellite/GetFlyovers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ latitude: lat, longitude: lon, passes: 5 })
+                })
+                .then(response => response.json())
+                .then(flyovers => {
+                    loadingEl.classList.add('d-none');
+
+                    if (flyovers.error) {
+                        errorEl.classList.remove('d-none');
+                        errorEl.textContent = flyovers.error;
+                        return;
+                    }
+
+                    if (flyovers.length === 0) {
+                        errorEl.classList.remove('d-none');
+                        errorEl.textContent = 'No flyovers predicted for your location.';
+                        return;
+                    }
+
+                    listEl.classList.remove('d-none');
+                    contentEl.innerHTML = '';
+
+                    flyovers.forEach(function(flyover, index) {
+                        const riseTime = new Date(flyover.riseTime);
+                        const duration = Math.round(flyover.durationSeconds / 60);
+                        const elevation = Math.round(flyover.maxElevationDegrees);
+
+                        const item = document.createElement('div');
+                        item.className = 'flyover-item';
+                        item.style.animationDelay = (index * 0.1) + 's';
+                        item.innerHTML = `
+                            <div style="color: var(--text-primary); font-weight: 600;">${riseTime.toLocaleDateString()} at ${riseTime.toLocaleTimeString()}</div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">
+                                ⏱️ ${duration} min &nbsp;|&nbsp; 📐 Max elevation: ${elevation}°
+                            </div>
+                        `;
+                        contentEl.appendChild(item);
+                    });
+                })
+                .catch(error => {
+                    loadingEl.classList.add('d-none');
+                    errorEl.classList.remove('d-none');
+                    errorEl.textContent = 'Error fetching flyover data.';
+                    console.error('Error:', error);
+                });
+            },
+            function(error) {
+                loadingEl.classList.add('d-none');
+                errorEl.classList.remove('d-none');
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorEl.textContent = 'Location access denied. Please enable location permissions.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorEl.textContent = 'Location information is unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        errorEl.textContent = 'Location request timed out.';
+                        break;
+                    default:
+                        errorEl.textContent = 'An unknown error occurred.';
+                }
+            }
+        );
+    });
+</script>
+}

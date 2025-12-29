@@ -1,0 +1,143 @@
+@model LaunchListViewModel
+@{
+    ViewData["Title"] = "Upcoming Launches";
+}
+
+<div class="hero-section" style="padding: 1rem 0 2rem;">
+    <h1 class="hero-title" style="font-size: 2.5rem;">🚀 Upcoming Space Launches</h1>
+    <p class="hero-subtitle">Stay updated with the latest rocket launches from around the world</p>
+</div>
+
+@if (Model.Launches.Any())
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var launch in Model.Launches)
+        {
+            <div class="col">
+                <div class="card h-100 launch-card" style="animation: fadeInUp 0.5s ease;">
+                    @if (!string.IsNullOrEmpty(launch.ImageUrl))
+                    {
+                        <div class="launch-image-container">
+                            <img src="@launch.ImageUrl" class="card-img-top" alt="@launch.Name" style="height: 200px; object-fit: cover;">
+                            <div class="launch-image-overlay"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));">
+                            <span style="font-size: 4rem; opacity: 0.5;">🚀</span>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge @GetStatusBadgeClass(launch.Status)">@launch.Status</span>
+                            <span class="badge @GetCountdownBadgeClass(launch.TimeUntilLaunch)">@launch.TimeUntilLaunch</span>
+                        </div>
+                        <h5 class="card-title" style="color: var(--text-primary); font-weight: 600;">@TruncateText(launch.Name, 60)</h5>
+                        <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.75rem;">
+                            @if (!string.IsNullOrEmpty(launch.RocketName))
+                            {
+                                <div class="mb-1"><span style="color: var(--text-secondary);">Rocket:</span> @launch.RocketName</div>
+                            }
+                            @if (!string.IsNullOrEmpty(launch.LaunchProvider))
+                            {
+                                <div><span style="color: var(--text-secondary);">Provider:</span> @launch.LaunchProvider</div>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(launch.MissionDescription))
+                        {
+                            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0;">@TruncateText(launch.MissionDescription, 100)</p>
+                        }
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <small style="color: var(--text-muted);">
+                            @if (launch.LaunchDate.HasValue)
+                            {
+                                <span>📅 @launch.LaunchDate.Value.ToString("MMM dd, yyyy")</span>
+                            }
+                            else
+                            {
+                                <text>📅 Date TBD</text>
+                            }
+                        </small>
+                        <a asp-action="Details" asp-route-id="@launch.LaunchLibraryId" class="btn btn-sm btn-primary">
+                            Details →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;">🚀</div>
+            <h4 style="color: var(--text-secondary);">No Upcoming Launches</h4>
+            <p style="color: var(--text-muted);">There are no upcoming launches to display at this time. Please check back later.</p>
+        </div>
+    </div>
+}
+
+@section Styles {
+<style>
+    .launch-image-container {
+        position: relative;
+        overflow: hidden;
+    }
+    .launch-image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: linear-gradient(to top, var(--bg-card), transparent);
+    }
+    .launch-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .launch-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl), 0 0 30px rgba(59, 130, 246, 0.15);
+    }
+    .launch-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    .launch-card .card-img-top {
+        transition: transform 0.3s ease;
+    }
+</style>
+}
+
+@functions {
+    private string GetStatusBadgeClass(LaunchStatus status)
+    {
+        return status switch
+        {
+            LaunchStatus.Scheduled => "bg-primary",
+            LaunchStatus.InFlight => "bg-warning text-dark",
+            LaunchStatus.Success => "bg-success",
+            LaunchStatus.Failed => "bg-danger",
+            LaunchStatus.PartialFailure => "bg-warning text-dark",
+            LaunchStatus.ToBeDetermined => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetCountdownBadgeClass(string countdown)
+    {
+        if (countdown.Contains("hour") || countdown.Contains("min"))
+            return "bg-danger";
+        if (countdown.Contains("1 day") || countdown.Contains("2 day"))
+            return "bg-warning text-dark";
+        return "bg-info";
+    }
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+        return text.Substring(0, maxLength) + "...";
+    }
+}
